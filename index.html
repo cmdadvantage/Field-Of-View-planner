@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The SG CCTV Vision Planner | Field of View & Lens Calculator for Singapore</title>
+    <!-- SEO Meta Description -->
+    <meta name="description" content="Calculate your CCTV camera's field of view (FOV) and lens size needed for HDB, condo, or business security in Singapore. Ensure perfect coverage and clarity for evidence.">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font import and application */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc; /* Light background for professionalism */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+<div class="max-w-4xl mx-auto bg-white shadow-2xl rounded-xl p-6 md:p-10 border-t-8 border-cyan-600">
+    <!-- SEO & Branding Header -->
+    <header class="mb-8 text-center">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">
+            🦅 The SG CCTV Eagle Eye Planner 📐
+        </h1>
+        <p class="text-xl text-cyan-600 font-semibold mb-4">
+            Find the Perfect Lens. Calculate Coverage, Not Guesswork.
+        </p>
+        <p class="text-gray-500 max-w-2xl mx-auto">
+            Use this tool to determine the **Field of View (FOV)** and **Pixel Density (PPM)** required for your specific needs, whether it's monitoring your HDB corridor or landed property driveway.
+        </p>
+    </header>
+
+    <!-- Calculator Grid -->
+    <div id="calculator-inputs" class="grid md:grid-cols-3 gap-8 mb-8">
+
+        <!-- Input 1: Camera Lens Focal Length -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+            <label for="focal-length" class="block text-lg font-medium text-gray-700 mb-2">
+                1. Select Camera Lens (Focal Length in mm)
+            </label>
+            <select id="focal-length" onchange="calculateFOV()"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500 text-xl font-bold appearance-none">
+                <option value="2.8" selected>2.8 mm (Wide Angle - HDB Corridor)</option>
+                <option value="4">4 mm (Standard - Gate/Driveway)</option>
+                <option value="6">6 mm (Zoomed - Facing a distant object)</option>
+                <option value="12">12 mm (Extreme Zoom - Long distances)</option>
+            </select>
+            <p class="mt-2 text-sm text-gray-500">
+                Smaller number = wider view. Larger number = more detail further away.
+            </p>
+        </div>
+
+        <!-- Input 2: Mounting Height -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+            <label for="mount-height" class="block text-lg font-medium text-gray-700 mb-2">
+                2. Camera Mounting Height (H in meters)
+            </label>
+            <input type="number" id="mount-height" value="3.0" min="1.5" step="0.5" oninput="calculateFOV()"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500 text-xl font-bold">
+            <p class="mt-2 text-sm text-gray-500">
+                E.g., 2.5m for a standard HDB ceiling, 3.5m for a double-storey house exterior.
+            </p>
+        </div>
+
+        <!-- Input 3: Distance to Target -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+            <label for="target-distance" class="block text-lg font-medium text-gray-700 mb-2">
+                3. Distance to Target Area (D in meters)
+            </label>
+            <input type="number" id="target-distance" value="10.0" min="1" step="1" oninput="calculateFOV()"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500 text-xl font-bold">
+            <p class="mt-2 text-sm text-gray-500">
+                How far is the object (door, gate, car) you need to see clearly?
+            </p>
+        </div>
+        
+        <!-- Camera Resolution (Hidden input for PPM calculation) -->
+        <input type="hidden" id="camera-resolution-width" value="2560"> <!-- Assuming 4MP camera (2560 horizontal pixels) -->
+
+    </div>
+
+    <!-- Results Area -->
+    <div id="results-card" class="mt-8 p-6 bg-cyan-50 border-2 border-cyan-600 rounded-xl text-center">
+        <h2 class="text-2xl font-bold text-cyan-900 mb-4">
+            🔍 Calculated Coverage & Clarity:
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+            
+            <!-- Result 1: Horizontal FOV -->
+            <div class="p-4 bg-white rounded-lg shadow-md">
+                <p class="text-sm font-semibold text-gray-500">Horizontal Field of View (HFOV)</p>
+                <p class="text-4xl font-extrabold text-cyan-600" id="hfov-result">0.0°</p>
+                <p class="text-sm text-gray-700 mt-2">The total angle the camera sees.</p>
+            </div>
+
+            <!-- Result 2: Coverage Width -->
+            <div class="p-4 bg-white rounded-lg shadow-md">
+                <p class="text-sm font-semibold text-gray-500">Coverage Width at Target Distance</p>
+                <p class="text-4xl font-extrabold text-cyan-600" id="coverage-width-result">0.0 m</p>
+                <p class="text-sm text-gray-700 mt-2">The width of the area captured at your target.</p>
+            </div>
+
+            <!-- Result 3: Pixel Density (PPM) -->
+            <div class="p-4 bg-white rounded-lg shadow-md">
+                <p class="text-sm font-semibold text-gray-500">Pixel Density (PPM)</p>
+                <p class="text-4xl font-extrabold text-cyan-600" id="ppm-result">0 PPM</p>
+                <p class="text-sm text-gray-700 mt-2">Critical for evidence quality. (Pixels Per Meter).</p>
+            </div>
+        </div>
+
+        <div id="recommendation-text" class="text-sm text-gray-700 mt-6 pt-4 border-t border-cyan-200">
+            <!-- Recommendation based on PPM goes here -->
+        </div>
+    </div>
+
+    <!-- SEO Footer Content -->
+    <footer class="mt-10 pt-6 border-t border-gray-200 text-center">
+        <p class="text-sm text-gray-500">
+            *This calculator uses a standard 1/2.7" sensor size and assumes a 4MP (2560px width) camera resolution for the Pixel Density (PPM) estimate. PPM is the most important factor for security evidence.
+        </p>
+    </footer>
+
+</div>
+
+<script>
+    // Constants for CCTV Field of View Calculations
+    // Using a common sensor size: 1/2.7" sensor width (approx 5.37mm)
+    const SENSOR_WIDTH_MM = 5.37; 
+    const PIXELS_HORIZONTAL = parseInt(document.getElementById('camera-resolution-width').value); // 2560 for 4MP
+
+    // DORI Standards for Singapore Security Requirements (Approximate Pixels Per Meter - PPM)
+    const DORI_THRESHOLDS = {
+        IDENTIFICATION: 250, // License Plate/Positive ID of unfamiliar face
+        RECOGNITION: 120,    // Knowing a familiar person
+        OBSERVATION: 60,     // Characteristic details, clothing
+        DETECTION: 25        // Simple presence of a person
+    };
+
+    function calculateFOV() {
+        // 1. Get User Inputs
+        const focalLength = parseFloat(document.getElementById('focal-length').value) || 0;
+        const targetDistance = parseFloat(document.getElementById('target-distance').value) || 0;
+        
+        if (focalLength <= 0 || targetDistance <= 0) {
+            updateResults('0.0°', '0.0 m', '0 PPM', 'Please adjust your inputs to get a calculation.');
+            return;
+        }
+
+        // 2. Calculate Horizontal Field of View (HFOV) Angle
+        // Formula: HFOV = 2 * atan( (Sensor Width / 2) / Focal Length )
+        const halfSensorRatio = (SENSOR_WIDTH_MM / 2) / focalLength;
+        const hfovRadians = 2 * Math.atan(halfSensorRatio);
+        const hfovDegrees = hfovRadians * (180 / Math.PI);
+        
+        // 3. Calculate Horizontal Coverage Width at Target Distance
+        // Formula: W_cov = 2 * Target Distance * tan(HFOV / 2)
+        const coverageWidth = 2 * targetDistance * Math.tan(hfovRadians / 2);
+
+        // 4. Calculate Pixel Density (PPM - Pixels Per Meter)
+        // PPM = Horizontal Pixels / Coverage Width (in meters)
+        const ppm = PIXELS_HORIZONTAL / coverageWidth;
+
+        // 5. Determine Security Recommendation
+        let recommendation = '';
+        let recommendationClass = 'text-gray-700';
+        let level = '';
+
+        if (ppm >= DORI_THRESHOLDS.IDENTIFICATION) {
+            level = 'Identification';
+            recommendation = 'Excellent! You have enough detail to identify unknown faces or read license plates clearly.';
+            recommendationClass = 'text-green-600 font-bold';
+        } else if (ppm >= DORI_THRESHOLDS.RECOGNITION) {
+            level = 'Recognition';
+            recommendation = 'Very Good. You can recognize familiar people (e.g., neighbors, delivery drivers) and clearly observe their actions.';
+            recommendationClass = 'text-blue-600 font-bold';
+        } else if (ppm >= DORI_THRESHOLDS.OBSERVATION) {
+            level = 'Observation';
+            recommendation = 'Fair. You can observe characteristic details like clothing, general movement, and the presence of objects. Good for general area monitoring.';
+            recommendationClass = 'text-yellow-600 font-bold';
+        } else if (ppm >= DORI_THRESHOLDS.DETECTION) {
+            level = 'Detection';
+            recommendation = 'Minimum Security. You can detect the presence of a person, but detail is very limited. Consider a longer focal length lens or moving the camera closer.';
+            recommendationClass = 'text-orange-600 font-bold';
+        } else {
+            level = 'Too Low';
+            recommendation = 'Warning! Your detail level is too low for useful evidence. You must select a longer focal length lens (higher mm) or move the camera much closer to the target area.';
+            recommendationClass = 'text-red-600 font-bold';
+        }
+
+        // 6. Update Display
+        updateResults(
+            hfovDegrees.toFixed(1) + '°',
+            coverageWidth.toFixed(1) + ' m',
+            Math.round(ppm) + ' PPM',
+            `<p class="text-xl ${recommendationClass} mb-2">Security Level: ${level}</p><p>${recommendation}</p>`
+        );
+    }
+
+    /**
+     * Helper function to update the results display.
+     */
+    function updateResults(hfov, coverage, ppm, recommendationHtml) {
+        document.getElementById('hfov-result').textContent = hfov;
+        document.getElementById('coverage-width-result').textContent = coverage;
+        document.getElementById('ppm-result').textContent = ppm;
+        document.getElementById('recommendation-text').innerHTML = recommendationHtml;
+    }
+
+    // Run the calculation once on load with default values
+    document.addEventListener('DOMContentLoaded', calculateFOV);
+</script>
+
+</body>
+</html>
